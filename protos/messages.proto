@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+package gigamessages;
+
+message InitData {
+    string dataPath = 1;
+    string apiPath = 2;
+}
+
+message Login {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    int32 errorCode = 2;
+    string token = 3;    
+    int32 userId = 4;    
+}
+
+
+message CreateNote {
+    string title = 1;
+    string text = 2;
+    string folderId = 3;
+}
+
+message CreateFolder {
+    string parentId = 1;
+    string title = 2;    
+}
+
+message CreateFolderResponse {
+    bool success = 1;
+    int32 errorCode = 2;
+    string folderId = 3;    
+}
+
+message CreateNoteResponse {
+    bool success = 1;
+    int32 errorCode = 2;
+    string noteId = 3;    
+}
+
+message GetNotesList {
+    string folderId = 1;    
+}
+
+message GetAllNotes {
+    int32 offset = 1;
+    int32 limit = 2;
+}
+
+message SetToken {
+    string token = 1;
+}
+
+message NoteShortInfo {
+    string id = 1;
+    string folderId = 2;
+    string title = 3;
+    int64 createdAt = 4;
+    int64 updatedAt = 5;    
+}
+
+message GetNotesListResponse {        
+    bool success = 1;
+    int32 errorCode = 2;
+    repeated NoteShortInfo notes = 3;    
+}
+
+message Folder {
+    string id = 1;
+    string parentId = 2;
+    string title = 3;
+    int32 level = 4;
+    int64 createdAt = 5;
+    int64 updatedAt = 6;    
+}
+
+message GetFoldersListResponse {        
+    bool success = 1;
+    int32 errorCode = 2;
+    repeated Folder folders = 3;    
+}
+
+message GetNoteById {
+    string noteId = 1;    
+}
+
+message GetNoteByIdResponse {
+    bool success = 1;
+    int32 errorCode = 2;
+    string id = 3;
+    string folderId = 4;
+    string title = 5;
+    string text = 6;        
+}
+
+message GetFolderById {
+    string folderId = 1;    
+}
+
+message GetFolderByIdResponse {
+    bool success = 1;
+    int32 errorCode = 2;    
+    string id = 3;
+    string title = 4;    
+    string parentId = 5;
+    int32 level = 6;
+    int64 createdAt = 7;
+    int64 updatedAt = 8;                
+}
+
+message RemoveNote {
+    string noteId = 1;
+}
+
+message RemoveFolder {
+    string folderId = 1;
+}
+
+
+message GetRootFolderResponse {
+    bool success = 1;
+    int32 errorCode = 2;    
+    string folderId = 3;
+    string title = 5;            
+}
+
+message EmptyResultResponse {
+    bool success = 1;
+    int32 errorCode = 2;
+}
+
+message GetLastLoginDataResponse {
+    bool success = 1;
+    int32 errorCode = 2;
+    string token = 3;
+    int32 userId = 4;
+    string email = 5;
+}
+
+message SearchNotes {
+    string query = 1;
+    string folderId = 2;
+}
+
+message UpdateFolder {
+    string id = 1;
+    string parentId = 2;
+    string title = 3;
+    int32 level = 4;   
+}
+
+message UpdateNote {
+    string id = 1;
+    string folderId = 2;
+    string title = 3;
+    string text = 4;    
+}
