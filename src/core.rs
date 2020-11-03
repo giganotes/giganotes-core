@@ -418,7 +418,7 @@ impl Worker {
         notes_update_query.push_str(&ids_joined_str);
         notes_update_query.push_str(&")".to_string());
 
-        let time_millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+        let time_millis = self.get_time_in_millis();
 
         conn.execute(&folders_update_query, params![time_millis]).unwrap();
         conn.execute(&notes_update_query, params![time_millis]).unwrap();
@@ -435,7 +435,7 @@ impl Worker {
 
         let new_note_uuid = Uuid::new_v4().to_hyphenated().to_string();
 
-        let time_millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+        let time_millis = self.get_time_in_millis();
         let user_id = self.data.lock().unwrap().userId;
 
         self.connection.lock().unwrap().as_ref().unwrap().execute(
@@ -562,7 +562,7 @@ impl Worker {
         }
 
         let new_folder_uuid = Uuid::new_v4().to_hyphenated().to_string();
-        let time_millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+        let time_millis = self.get_time_in_millis();
         let user_id = self.data.lock().unwrap().userId;
         self.insert_folder(&new_folder_uuid, &parsed.title, parsed.parentId, new_folder_level, user_id, time_millis, time_millis, None);
 
@@ -1302,6 +1302,13 @@ impl Worker {
         let parsed = parse_from_bytes::<proto::messages::UpdateFolder>(&command_data).unwrap();
         info!("Update folder with name {}", parsed.title);
 
+        let time_millis = self.get_time_in_millis();
+
+        self.connection.lock().unwrap().as_ref().unwrap().execute(
+            "UPDATE folder SET title = ?, parentId = ?, level = ?, updatedAt = ? WHERE id = ?",
+            params![&parsed.title, &parsed.parentId, &parsed.level, time_millis, &parsed.id]
+        ).unwrap();
+
         let mut res = proto::messages::EmptyResultResponse::new();
         res.success = true;
 
@@ -1312,7 +1319,7 @@ impl Worker {
         let parsed = parse_from_bytes::<proto::messages::UpdateNote> (&command_data).unwrap();
         info!("Update note with id {}", parsed.id);
 
-        let time_millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+        let time_millis = self.get_time_in_millis();
 
         self.connection.lock().unwrap().as_ref().unwrap().execute(
             "UPDATE note SET title = ?, folderId = ?, text = ?, updatedAt = ? WHERE id = ?",
