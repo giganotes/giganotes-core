@@ -6166,6 +6166,324 @@ impl ::protobuf::reflect::ProtobufValue for UpdateNote {
     }
 }
 
+#[derive(PartialEq,Clone,Default)]
+pub struct AddToFavorites {
+    // message fields
+    pub noteId: ::std::string::String,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a AddToFavorites {
+    fn default() -> &'a AddToFavorites {
+        <AddToFavorites as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl AddToFavorites {
+    pub fn new() -> AddToFavorites {
+        ::std::default::Default::default()
+    }
+
+    // string noteId = 1;
+
+
+    pub fn get_noteId(&self) -> &str {
+        &self.noteId
+    }
+    pub fn clear_noteId(&mut self) {
+        self.noteId.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_noteId(&mut self, v: ::std::string::String) {
+        self.noteId = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_noteId(&mut self) -> &mut ::std::string::String {
+        &mut self.noteId
+    }
+
+    // Take field
+    pub fn take_noteId(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.noteId, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for AddToFavorites {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.noteId)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if !self.noteId.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.noteId);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if !self.noteId.is_empty() {
+            os.write_string(1, &self.noteId)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> AddToFavorites {
+        AddToFavorites::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "noteId",
+                |m: &AddToFavorites| { &m.noteId },
+                |m: &mut AddToFavorites| { &mut m.noteId },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<AddToFavorites>(
+                "AddToFavorites",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static AddToFavorites {
+        static instance: ::protobuf::rt::LazyV2<AddToFavorites> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(AddToFavorites::new)
+    }
+}
+
+impl ::protobuf::Clear for AddToFavorites {
+    fn clear(&mut self) {
+        self.noteId.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for AddToFavorites {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for AddToFavorites {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct RemoveFromFavorites {
+    // message fields
+    pub noteId: ::std::string::String,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a RemoveFromFavorites {
+    fn default() -> &'a RemoveFromFavorites {
+        <RemoveFromFavorites as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl RemoveFromFavorites {
+    pub fn new() -> RemoveFromFavorites {
+        ::std::default::Default::default()
+    }
+
+    // string noteId = 1;
+
+
+    pub fn get_noteId(&self) -> &str {
+        &self.noteId
+    }
+    pub fn clear_noteId(&mut self) {
+        self.noteId.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_noteId(&mut self, v: ::std::string::String) {
+        self.noteId = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_noteId(&mut self) -> &mut ::std::string::String {
+        &mut self.noteId
+    }
+
+    // Take field
+    pub fn take_noteId(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.noteId, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for RemoveFromFavorites {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.noteId)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if !self.noteId.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.noteId);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if !self.noteId.is_empty() {
+            os.write_string(1, &self.noteId)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> RemoveFromFavorites {
+        RemoveFromFavorites::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "noteId",
+                |m: &RemoveFromFavorites| { &m.noteId },
+                |m: &mut RemoveFromFavorites| { &mut m.noteId },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<RemoveFromFavorites>(
+                "RemoveFromFavorites",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static RemoveFromFavorites {
+        static instance: ::protobuf::rt::LazyV2<RemoveFromFavorites> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(RemoveFromFavorites::new)
+    }
+}
+
+impl ::protobuf::Clear for RemoveFromFavorites {
+    fn clear(&mut self) {
+        self.noteId.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for RemoveFromFavorites {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for RemoveFromFavorites {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x15protos/messages.proto\x12\x0cgigamessages\"@\n\x08InitData\x12\x1a\
     \n\x08dataPath\x18\x01\x20\x01(\tR\x08dataPath\x12\x18\n\x07apiPath\x18\
@@ -6234,7 +6552,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x01(\x05R\x05level\"b\n\nUpdateNote\x12\x0e\n\x02id\x18\x01\x20\x01(\tR\
     \x02id\x12\x1a\n\x08folderId\x18\x02\x20\x01(\tR\x08folderId\x12\x14\n\
     \x05title\x18\x03\x20\x01(\tR\x05title\x12\x12\n\x04text\x18\x04\x20\x01\
-    (\tR\x04textb\x06proto3\
+    (\tR\x04text\"(\n\x0eAddToFavorites\x12\x16\n\x06noteId\x18\x01\x20\x01(\
+    \tR\x06noteId\"-\n\x13RemoveFromFavorites\x12\x16\n\x06noteId\x18\x01\
+    \x20\x01(\tR\x06noteIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

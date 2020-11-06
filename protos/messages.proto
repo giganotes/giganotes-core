@@ -160,3 +160,11 @@ message UpdateNote {
     string title = 3;
     string text = 4;    
 }
+
+message AddToFavorites {
+    string noteId = 1;
+}
+
+message RemoveFromFavorites {
+    string noteId = 1;
+}
