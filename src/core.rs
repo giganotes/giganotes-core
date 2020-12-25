@@ -46,7 +46,9 @@ struct Worker {
     index: Mutex<Option<tantivy::Index>>,
     index_writer: Mutex<Option<tantivy::IndexWriter>>,
     index_reader: Mutex<Option<tantivy::IndexReader>>,
-    fields: RwLock<HashMap<String, tantivy::schema::Field>>,
+    fields: RwLock<HashMap<String, tantivy::schema::Field>>,    
+    text_index_sender: Arc<Mutex<Sender<String>>>,
+    text_index_receiver: Arc<Mutex<Receiver<String>>>,    
 }
 
 pub struct AsyncWorker {
@@ -191,7 +193,7 @@ impl DbMigration for InitialMigration {
 impl Worker {
     fn init(&self) {
         self.data.lock().unwrap().active = false;
-        info!("Creating worker");
+        info!("Creating worker");    
     }
 
     fn get_property(&self, key: &str) -> Option<String> {
@@ -244,7 +246,7 @@ impl Worker {
 
     fn handle_init(&self, command_data: &[u8]) -> Vec<u8> {
         //Makes all the initialization work
-        info!("Init command started");
+        info!("Init command started. Core version: 1.0.1");
         let mut data = self.data.lock().unwrap();
 
         if data.active {
@@ -278,7 +280,7 @@ impl Worker {
         self.retrieve_login_data_from_db(&mut data);
 
         self.initialize_fts(init_data.get_dataPath());
-
+        
         return res.write_to_bytes().unwrap();
     }
 
@@ -474,10 +476,16 @@ impl Worker {
 
         let plain_text = from_read(parsed.text.as_bytes(), 10000000);
 
-        self.add_note_to_search_index(&new_note_uuid, &parsed.title, &plain_text, &parsed.folderId);
+        self.schedule_update_in_search_index(&new_note_uuid);
+
         return res.write_to_bytes().unwrap();
     }
 
+    fn schedule_update_in_search_index(&self, id: &str) {
+        info!("Schedule index update for note {}", id);
+        self.text_index_sender.lock().unwrap().send(id.to_string());
+    }
+    
     fn add_note_to_search_index(&self, id: &str, title: &str, text: &str, folder_id: &str) {
         let mut index_writer = self.index_writer.lock().unwrap();
         let fields_map = self.fields.read().unwrap();
@@ -1273,11 +1281,9 @@ impl Worker {
                             "UPDATE note SET title = ?, folderId = ?, text = ?, updatedAt = ? WHERE id = ?",
                             params![&note.title, &note.folderId, &note.text, note.updatedAt.timestamp_millis(), &note.id]
                         ).unwrap();
-                        self.update_note_in_search_index(
-                            &note.id,
-                            &note.title,
-                            &note.text,
-                            &note.folderId,
+
+                        self.schedule_update_in_search_index(
+                            &note.id
                         );
                     // Update local info
                     } else if remote_note_timestamp < local_note.updatedAt {
@@ -1304,12 +1310,7 @@ impl Worker {
                             note.updatedAt.timestamp_millis(),
                         );
                         if inserted {
-                            self.add_note_to_search_index(
-                                &note.id,
-                                &note.title,
-                                &note.text,
-                                &note.folderId,
-                            );
+                            self.schedule_update_in_search_index(&note.id);
                         }
                     }
                 }
@@ -1520,7 +1521,7 @@ impl Worker {
             )
             .unwrap();
 
-        self.update_note_in_search_index(&parsed.id, &parsed.title, &parsed.text, &parsed.folderId);
+        self.schedule_update_in_search_index(&parsed.id);
         let mut res = proto::messages::EmptyResultResponse::new();
         res.success = true;
 
@@ -1757,6 +1758,24 @@ impl Worker {
 impl AsyncWorker {
     fn init(&self) {
         self.inner.init();
+        self.start_text_indexing_thread();
+    }
+
+    fn start_text_indexing_thread(&self) {        
+        let text_indexer_receiver_local = self.inner.text_index_receiver.clone();         
+        let mut local_self = self.inner.clone();
+
+        thread::spawn(move|| {            
+            loop {
+                let note_id = text_indexer_receiver_local.lock().unwrap().recv().unwrap();
+                println!("Indexing thread received note id {} to index", note_id);
+
+                let note_full_info = local_self.get_local_note_by_id(&note_id).unwrap();
+                local_self.update_note_in_search_index(&note_id, &note_full_info.title, &note_full_info.text, &note_full_info.folderId);
+
+                println!("Indexing thread finished processing note {}", note_id);
+            }     
+        });
     }
 
     fn handle(&self, command: i8, data: &[u8], size: usize) -> Vec<u8> {
@@ -1782,6 +1801,7 @@ impl AsyncWorker {
 lazy_static! {
     pub static ref WORKER: AsyncWorker = {
         let (tx, rx) = mpsc::channel();
+        let (text_index_sender, text_index_receiver) = mpsc::channel();
         let mut worker = AsyncWorker {
             inner: Arc::new(Worker {
                 data: Mutex::new(WorkerData {
@@ -1796,6 +1816,8 @@ lazy_static! {
                 index_reader: Mutex::new(None),
                 index_writer: Mutex::new(None),
                 fields: RwLock::new(HashMap::<String, tantivy::schema::Field>::new()),
+                text_index_sender: Arc::new(Mutex::new(text_index_sender)),
+                text_index_receiver: Arc::new(Mutex::new(text_index_receiver)),                
             }),
             sender: Arc::new(Mutex::new(tx)),
             receiver: Arc::new(Mutex::new(rx)),
