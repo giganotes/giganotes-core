@@ -5104,6 +5104,7 @@ pub struct GetLastLoginDataResponse {
     pub token: ::std::string::String,
     pub userId: i32,
     pub email: ::std::string::String,
+    pub isTokenValid: bool,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -5216,6 +5217,21 @@ impl GetLastLoginDataResponse {
     pub fn take_email(&mut self) -> ::std::string::String {
         ::std::mem::replace(&mut self.email, ::std::string::String::new())
     }
+
+    // bool isTokenValid = 6;
+
+
+    pub fn get_isTokenValid(&self) -> bool {
+        self.isTokenValid
+    }
+    pub fn clear_isTokenValid(&mut self) {
+        self.isTokenValid = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_isTokenValid(&mut self, v: bool) {
+        self.isTokenValid = v;
+    }
 }
 
 impl ::protobuf::Message for GetLastLoginDataResponse {
@@ -5254,6 +5270,13 @@ impl ::protobuf::Message for GetLastLoginDataResponse {
                 5 => {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.email)?;
                 },
+                6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.isTokenValid = tmp;
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -5281,6 +5304,9 @@ impl ::protobuf::Message for GetLastLoginDataResponse {
         if !self.email.is_empty() {
             my_size += ::protobuf::rt::string_size(5, &self.email);
         }
+        if self.isTokenValid != false {
+            my_size += 2;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -5301,6 +5327,9 @@ impl ::protobuf::Message for GetLastLoginDataResponse {
         }
         if !self.email.is_empty() {
             os.write_string(5, &self.email)?;
+        }
+        if self.isTokenValid != false {
+            os.write_bool(6, self.isTokenValid)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -5365,6 +5394,11 @@ impl ::protobuf::Message for GetLastLoginDataResponse {
                 |m: &GetLastLoginDataResponse| { &m.email },
                 |m: &mut GetLastLoginDataResponse| { &mut m.email },
             ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                "isTokenValid",
+                |m: &GetLastLoginDataResponse| { &m.isTokenValid },
+                |m: &mut GetLastLoginDataResponse| { &mut m.isTokenValid },
+            ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<GetLastLoginDataResponse>(
                 "GetLastLoginDataResponse",
                 fields,
@@ -5386,6 +5420,7 @@ impl ::protobuf::Clear for GetLastLoginDataResponse {
         self.token.clear();
         self.userId = 0;
         self.email.clear();
+        self.isTokenValid = false;
         self.unknown_fields.clear();
     }
 }
@@ -6540,14 +6575,15 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x1a\n\x08folderId\x18\x03\x20\x01(\tR\x08folderId\x12\x14\n\x05titl\
     e\x18\x05\x20\x01(\tR\x05title\"M\n\x13EmptyResultResponse\x12\x18\n\x07\
     success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\
-    \x20\x01(\x05R\terrorCode\"\x96\x01\n\x18GetLastLoginDataResponse\x12\
+    \x20\x01(\x05R\terrorCode\"\xba\x01\n\x18GetLastLoginDataResponse\x12\
     \x18\n\x07success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\
     \x18\x02\x20\x01(\x05R\terrorCode\x12\x14\n\x05token\x18\x03\x20\x01(\tR\
     \x05token\x12\x16\n\x06userId\x18\x04\x20\x01(\x05R\x06userId\x12\x14\n\
-    \x05email\x18\x05\x20\x01(\tR\x05email\"?\n\x0bSearchNotes\x12\x14\n\x05\
-    query\x18\x01\x20\x01(\tR\x05query\x12\x1a\n\x08folderId\x18\x02\x20\x01\
-    (\tR\x08folderId\"f\n\x0cUpdateFolder\x12\x0e\n\x02id\x18\x01\x20\x01(\t\
-    R\x02id\x12\x1a\n\x08parentId\x18\x02\x20\x01(\tR\x08parentId\x12\x14\n\
+    \x05email\x18\x05\x20\x01(\tR\x05email\x12\"\n\x0cisTokenValid\x18\x06\
+    \x20\x01(\x08R\x0cisTokenValid\"?\n\x0bSearchNotes\x12\x14\n\x05query\
+    \x18\x01\x20\x01(\tR\x05query\x12\x1a\n\x08folderId\x18\x02\x20\x01(\tR\
+    \x08folderId\"f\n\x0cUpdateFolder\x12\x0e\n\x02id\x18\x01\x20\x01(\tR\
+    \x02id\x12\x1a\n\x08parentId\x18\x02\x20\x01(\tR\x08parentId\x12\x14\n\
     \x05title\x18\x03\x20\x01(\tR\x05title\x12\x14\n\x05level\x18\x04\x20\
     \x01(\x05R\x05level\"b\n\nUpdateNote\x12\x0e\n\x02id\x18\x01\x20\x01(\tR\
     \x02id\x12\x1a\n\x08folderId\x18\x02\x20\x01(\tR\x08folderId\x12\x14\n\
