@@ -140,6 +140,7 @@ message GetLastLoginDataResponse {
     string token = 3;
     int32 userId = 4;
     string email = 5;
+    bool isTokenValid = 6;
 }
 
 message SearchNotes {

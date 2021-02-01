@@ -31,6 +31,7 @@ use tantivy::query::{BooleanQuery, Occur, Query, QueryParser, TermQuery};
 use tantivy::schema::*;
 use tantivy::ReloadPolicy;
 use uuid::Uuid;
+use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
 
 struct WorkerData {
     active: bool,
@@ -157,6 +158,11 @@ struct LoginResponse {
     userId: u32,
     rootFolder: SyncFolderInfo,
 }
+    
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    exp: usize,
+}
 
 pub trait DbMigration {
     fn get_id(&self) -> i32;
@@ -246,7 +252,7 @@ impl Worker {
 
     fn handle_init(&self, command_data: &[u8]) -> Vec<u8> {
         //Makes all the initialization work
-        info!("Init command started. Core version: 1.0.1");
+        info!("Init command started. Core version: 1.0.0");
         let mut data = self.data.lock().unwrap();
 
         if data.active {
@@ -1386,6 +1392,15 @@ impl Worker {
         res.userId = data.userId as i32;
         res.success = true;
 
+        if res.token.len() > 0 {     
+            res.isTokenValid = match decode::<Claims>(&res.token, &DecodingKey::from_secret("secret".as_ref()), &Validation::default()) {
+                Ok(c) => true,
+                Err(err) => false,
+            };
+        } else {
+            res.isTokenValid = false;
+        }
+        
         return res.write_to_bytes().unwrap();
     }
 
@@ -1722,6 +1737,19 @@ impl Worker {
         return res.write_to_bytes().unwrap();
     }
 
+    fn handle_logout(&self) -> Vec<u8> {
+        info!("Logging out");
+        
+        self.insert_or_update_props_record("token", &"".to_string());
+        self.insert_or_update_props_record("userId", &"".to_string());
+        self.insert_or_update_props_record("email", &"".to_string());
+
+        let mut res = proto::messages::EmptyResultResponse::new();
+        res.success = true;
+
+        return res.write_to_bytes().unwrap();
+    }    
+
     fn handle(&self, command: i8, data: &[u8], size: usize) -> Vec<u8> {
         match command {
             1 => self.handle_init(&data),
@@ -1746,6 +1774,7 @@ impl Worker {
             20 => self.handle_add_to_favorites(&data),
             21 => self.handle_remove_from_favorites(&data),
             22 => self.handle_get_favorites(),
+            23 => self.handle_logout(),
             _ => self.handle_unrecognized(),
         }
     }
