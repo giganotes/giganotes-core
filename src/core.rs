@@ -152,6 +152,13 @@ struct LoginData {
     password: String,
 }
 
+#[derive(Serialize, Deserialize)]
+struct LoginSocialData {
+    email: String,
+    provider: String,
+    token: String,
+}
+
 #[derive(Deserialize)]
 struct LoginResponse {
     token: String,
@@ -841,6 +848,67 @@ impl Worker {
         let mut data = self.data.lock().unwrap();
         let mut endpoint = data.apiPath.clone();
         endpoint.push_str(&"/login".to_string());
+
+        let loginResponseResult = client.post(&endpoint).json(&loginData).send();
+
+        let loginResponseRaw = match loginResponseResult {
+            Ok(result) => result,
+            Err(e) => {
+                let mut res = proto::messages::LoginResponse::new();
+                res.errorCode = 1;
+                res.success = false;
+                return res.write_to_bytes().unwrap();
+            }
+        };
+
+        if loginResponseRaw.status() != StatusCode::OK {
+            let mut res = proto::messages::LoginResponse::new();
+            res.errorCode = 2;
+            res.success = false;
+            return res.write_to_bytes().unwrap();
+        }
+
+        let loginResponse: LoginResponse = loginResponseRaw.json().unwrap();
+        data.token = loginResponse.token;
+        data.userId = loginResponse.userId;
+        data.email = parsed.email;
+
+        let mut res = proto::messages::LoginResponse::new();
+        res.success = true;
+
+        self.save_login_data_to_db(&data);
+
+        if !self.has_folder_by_id(&loginResponse.rootFolder.id) {
+            self.insert_folder(
+                &loginResponse.rootFolder.id,
+                &loginResponse.rootFolder.title,
+                "".to_string(),
+                0,
+                loginResponse.userId,
+                loginResponse.rootFolder.createdAt.timestamp_millis(),
+                loginResponse.rootFolder.updatedAt.timestamp_millis(),
+                None,
+            );
+        }
+
+        return res.write_to_bytes().unwrap();
+    }
+
+    fn handle_login_social(&self, command_data: &[u8]) -> Vec<u8> {
+        let parsed = parse_from_bytes::<proto::messages::LoginSocial>(&command_data).unwrap();
+
+        info!("Social login for account {}", parsed.email);
+
+        let loginData = LoginSocialData {
+            email: parsed.email.clone(),
+            provider: parsed.provider.clone(),
+            token: parsed.token.clone(),
+        };
+
+        let client = reqwest::blocking::Client::new();
+        let mut data = self.data.lock().unwrap();
+        let mut endpoint = data.apiPath.clone();
+        endpoint.push_str(&"/login-social".to_string());
 
         let loginResponseResult = client.post(&endpoint).json(&loginData).send();
 
@@ -1775,6 +1843,7 @@ impl Worker {
             21 => self.handle_remove_from_favorites(&data),
             22 => self.handle_get_favorites(),
             23 => self.handle_logout(),
+            24 => self.handle_login_social(&data);
             _ => self.handle_unrecognized(),
         }
     }

@@ -12,6 +12,12 @@ message Login {
     string password = 2;
 }
 
+message LoginSocial {
+    string email = 1;
+    string provider = 2;
+    string token = 3;
+}
+
 message LoginResponse {
     bool success = 1;
     int32 errorCode = 2;

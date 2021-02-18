@@ -426,6 +426,249 @@ impl ::protobuf::reflect::ProtobufValue for Login {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct LoginSocial {
+    // message fields
+    pub email: ::std::string::String,
+    pub provider: ::std::string::String,
+    pub token: ::std::string::String,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a LoginSocial {
+    fn default() -> &'a LoginSocial {
+        <LoginSocial as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl LoginSocial {
+    pub fn new() -> LoginSocial {
+        ::std::default::Default::default()
+    }
+
+    // string email = 1;
+
+
+    pub fn get_email(&self) -> &str {
+        &self.email
+    }
+    pub fn clear_email(&mut self) {
+        self.email.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_email(&mut self, v: ::std::string::String) {
+        self.email = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_email(&mut self) -> &mut ::std::string::String {
+        &mut self.email
+    }
+
+    // Take field
+    pub fn take_email(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.email, ::std::string::String::new())
+    }
+
+    // string provider = 2;
+
+
+    pub fn get_provider(&self) -> &str {
+        &self.provider
+    }
+    pub fn clear_provider(&mut self) {
+        self.provider.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_provider(&mut self, v: ::std::string::String) {
+        self.provider = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_provider(&mut self) -> &mut ::std::string::String {
+        &mut self.provider
+    }
+
+    // Take field
+    pub fn take_provider(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.provider, ::std::string::String::new())
+    }
+
+    // string token = 3;
+
+
+    pub fn get_token(&self) -> &str {
+        &self.token
+    }
+    pub fn clear_token(&mut self) {
+        self.token.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_token(&mut self, v: ::std::string::String) {
+        self.token = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_token(&mut self) -> &mut ::std::string::String {
+        &mut self.token
+    }
+
+    // Take field
+    pub fn take_token(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.token, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for LoginSocial {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.email)?;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.provider)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.token)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if !self.email.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.email);
+        }
+        if !self.provider.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.provider);
+        }
+        if !self.token.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.token);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if !self.email.is_empty() {
+            os.write_string(1, &self.email)?;
+        }
+        if !self.provider.is_empty() {
+            os.write_string(2, &self.provider)?;
+        }
+        if !self.token.is_empty() {
+            os.write_string(3, &self.token)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> LoginSocial {
+        LoginSocial::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "email",
+                |m: &LoginSocial| { &m.email },
+                |m: &mut LoginSocial| { &mut m.email },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "provider",
+                |m: &LoginSocial| { &m.provider },
+                |m: &mut LoginSocial| { &mut m.provider },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "token",
+                |m: &LoginSocial| { &m.token },
+                |m: &mut LoginSocial| { &mut m.token },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<LoginSocial>(
+                "LoginSocial",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static LoginSocial {
+        static instance: ::protobuf::rt::LazyV2<LoginSocial> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(LoginSocial::new)
+    }
+}
+
+impl ::protobuf::Clear for LoginSocial {
+    fn clear(&mut self) {
+        self.email.clear();
+        self.provider.clear();
+        self.token.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for LoginSocial {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for LoginSocial {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct LoginResponse {
     // message fields
     pub success: bool,
@@ -6524,73 +6767,75 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x08dataPath\x18\x01\x20\x01(\tR\x08dataPath\x12\x18\n\x07apiPath\x18\
     \x02\x20\x01(\tR\x07apiPath\"9\n\x05Login\x12\x14\n\x05email\x18\x01\x20\
     \x01(\tR\x05email\x12\x1a\n\x08password\x18\x02\x20\x01(\tR\x08password\
-    \"u\n\rLoginResponse\x12\x18\n\x07success\x18\x01\x20\x01(\x08R\x07succe\
-    ss\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorCode\x12\x14\n\x05to\
-    ken\x18\x03\x20\x01(\tR\x05token\x12\x16\n\x06userId\x18\x04\x20\x01(\
-    \x05R\x06userId\"R\n\nCreateNote\x12\x14\n\x05title\x18\x01\x20\x01(\tR\
-    \x05title\x12\x12\n\x04text\x18\x02\x20\x01(\tR\x04text\x12\x1a\n\x08fol\
-    derId\x18\x03\x20\x01(\tR\x08folderId\"@\n\x0cCreateFolder\x12\x1a\n\x08\
-    parentId\x18\x01\x20\x01(\tR\x08parentId\x12\x14\n\x05title\x18\x02\x20\
-    \x01(\tR\x05title\"j\n\x14CreateFolderResponse\x12\x18\n\x07success\x18\
-    \x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\
-    \terrorCode\x12\x1a\n\x08folderId\x18\x03\x20\x01(\tR\x08folderId\"d\n\
-    \x12CreateNoteResponse\x12\x18\n\x07success\x18\x01\x20\x01(\x08R\x07suc\
-    cess\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorCode\x12\x16\n\x06\
-    noteId\x18\x03\x20\x01(\tR\x06noteId\"*\n\x0cGetNotesList\x12\x1a\n\x08f\
-    olderId\x18\x01\x20\x01(\tR\x08folderId\";\n\x0bGetAllNotes\x12\x16\n\
-    \x06offset\x18\x01\x20\x01(\x05R\x06offset\x12\x14\n\x05limit\x18\x02\
-    \x20\x01(\x05R\x05limit\"\x20\n\x08SetToken\x12\x14\n\x05token\x18\x01\
-    \x20\x01(\tR\x05token\"\x8d\x01\n\rNoteShortInfo\x12\x0e\n\x02id\x18\x01\
-    \x20\x01(\tR\x02id\x12\x1a\n\x08folderId\x18\x02\x20\x01(\tR\x08folderId\
-    \x12\x14\n\x05title\x18\x03\x20\x01(\tR\x05title\x12\x1c\n\tcreatedAt\
-    \x18\x04\x20\x01(\x03R\tcreatedAt\x12\x1c\n\tupdatedAt\x18\x05\x20\x01(\
-    \x03R\tupdatedAt\"\x81\x01\n\x14GetNotesListResponse\x12\x18\n\x07succes\
-    s\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\
-    \x05R\terrorCode\x121\n\x05notes\x18\x03\x20\x03(\x0b2\x1b.gigamessages.\
-    NoteShortInfoR\x05notes\"\x9c\x01\n\x06Folder\x12\x0e\n\x02id\x18\x01\
-    \x20\x01(\tR\x02id\x12\x1a\n\x08parentId\x18\x02\x20\x01(\tR\x08parentId\
-    \x12\x14\n\x05title\x18\x03\x20\x01(\tR\x05title\x12\x14\n\x05level\x18\
-    \x04\x20\x01(\x05R\x05level\x12\x1c\n\tcreatedAt\x18\x05\x20\x01(\x03R\t\
-    createdAt\x12\x1c\n\tupdatedAt\x18\x06\x20\x01(\x03R\tupdatedAt\"\x80\
-    \x01\n\x16GetFoldersListResponse\x12\x18\n\x07success\x18\x01\x20\x01(\
-    \x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorCode\
-    \x12.\n\x07folders\x18\x03\x20\x03(\x0b2\x14.gigamessages.FolderR\x07fol\
-    ders\"%\n\x0bGetNoteById\x12\x16\n\x06noteId\x18\x01\x20\x01(\tR\x06note\
-    Id\"\xa3\x01\n\x13GetNoteByIdResponse\x12\x18\n\x07success\x18\x01\x20\
-    \x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorC\
-    ode\x12\x0e\n\x02id\x18\x03\x20\x01(\tR\x02id\x12\x1a\n\x08folderId\x18\
-    \x04\x20\x01(\tR\x08folderId\x12\x14\n\x05title\x18\x05\x20\x01(\tR\x05t\
-    itle\x12\x12\n\x04text\x18\x06\x20\x01(\tR\x04text\"+\n\rGetFolderById\
-    \x12\x1a\n\x08folderId\x18\x01\x20\x01(\tR\x08folderId\"\xe3\x01\n\x15Ge\
-    tFolderByIdResponse\x12\x18\n\x07success\x18\x01\x20\x01(\x08R\x07succes\
-    s\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorCode\x12\x0e\n\x02id\
-    \x18\x03\x20\x01(\tR\x02id\x12\x14\n\x05title\x18\x04\x20\x01(\tR\x05tit\
-    le\x12\x1a\n\x08parentId\x18\x05\x20\x01(\tR\x08parentId\x12\x14\n\x05le\
-    vel\x18\x06\x20\x01(\x05R\x05level\x12\x1c\n\tcreatedAt\x18\x07\x20\x01(\
-    \x03R\tcreatedAt\x12\x1c\n\tupdatedAt\x18\x08\x20\x01(\x03R\tupdatedAt\"\
-    $\n\nRemoveNote\x12\x16\n\x06noteId\x18\x01\x20\x01(\tR\x06noteId\"*\n\
-    \x0cRemoveFolder\x12\x1a\n\x08folderId\x18\x01\x20\x01(\tR\x08folderId\"\
-    \x81\x01\n\x15GetRootFolderResponse\x12\x18\n\x07success\x18\x01\x20\x01\
-    (\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorCode\
-    \x12\x1a\n\x08folderId\x18\x03\x20\x01(\tR\x08folderId\x12\x14\n\x05titl\
-    e\x18\x05\x20\x01(\tR\x05title\"M\n\x13EmptyResultResponse\x12\x18\n\x07\
-    success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\
-    \x20\x01(\x05R\terrorCode\"\xba\x01\n\x18GetLastLoginDataResponse\x12\
-    \x18\n\x07success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\
-    \x18\x02\x20\x01(\x05R\terrorCode\x12\x14\n\x05token\x18\x03\x20\x01(\tR\
-    \x05token\x12\x16\n\x06userId\x18\x04\x20\x01(\x05R\x06userId\x12\x14\n\
-    \x05email\x18\x05\x20\x01(\tR\x05email\x12\"\n\x0cisTokenValid\x18\x06\
-    \x20\x01(\x08R\x0cisTokenValid\"?\n\x0bSearchNotes\x12\x14\n\x05query\
-    \x18\x01\x20\x01(\tR\x05query\x12\x1a\n\x08folderId\x18\x02\x20\x01(\tR\
-    \x08folderId\"f\n\x0cUpdateFolder\x12\x0e\n\x02id\x18\x01\x20\x01(\tR\
-    \x02id\x12\x1a\n\x08parentId\x18\x02\x20\x01(\tR\x08parentId\x12\x14\n\
-    \x05title\x18\x03\x20\x01(\tR\x05title\x12\x14\n\x05level\x18\x04\x20\
-    \x01(\x05R\x05level\"b\n\nUpdateNote\x12\x0e\n\x02id\x18\x01\x20\x01(\tR\
-    \x02id\x12\x1a\n\x08folderId\x18\x02\x20\x01(\tR\x08folderId\x12\x14\n\
-    \x05title\x18\x03\x20\x01(\tR\x05title\x12\x12\n\x04text\x18\x04\x20\x01\
-    (\tR\x04text\"(\n\x0eAddToFavorites\x12\x16\n\x06noteId\x18\x01\x20\x01(\
-    \tR\x06noteId\"-\n\x13RemoveFromFavorites\x12\x16\n\x06noteId\x18\x01\
-    \x20\x01(\tR\x06noteIdb\x06proto3\
+    \"U\n\x0bLoginSocial\x12\x14\n\x05email\x18\x01\x20\x01(\tR\x05email\x12\
+    \x1a\n\x08provider\x18\x02\x20\x01(\tR\x08provider\x12\x14\n\x05token\
+    \x18\x03\x20\x01(\tR\x05token\"u\n\rLoginResponse\x12\x18\n\x07success\
+    \x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\
+    \x05R\terrorCode\x12\x14\n\x05token\x18\x03\x20\x01(\tR\x05token\x12\x16\
+    \n\x06userId\x18\x04\x20\x01(\x05R\x06userId\"R\n\nCreateNote\x12\x14\n\
+    \x05title\x18\x01\x20\x01(\tR\x05title\x12\x12\n\x04text\x18\x02\x20\x01\
+    (\tR\x04text\x12\x1a\n\x08folderId\x18\x03\x20\x01(\tR\x08folderId\"@\n\
+    \x0cCreateFolder\x12\x1a\n\x08parentId\x18\x01\x20\x01(\tR\x08parentId\
+    \x12\x14\n\x05title\x18\x02\x20\x01(\tR\x05title\"j\n\x14CreateFolderRes\
+    ponse\x12\x18\n\x07success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\te\
+    rrorCode\x18\x02\x20\x01(\x05R\terrorCode\x12\x1a\n\x08folderId\x18\x03\
+    \x20\x01(\tR\x08folderId\"d\n\x12CreateNoteResponse\x12\x18\n\x07success\
+    \x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\
+    \x05R\terrorCode\x12\x16\n\x06noteId\x18\x03\x20\x01(\tR\x06noteId\"*\n\
+    \x0cGetNotesList\x12\x1a\n\x08folderId\x18\x01\x20\x01(\tR\x08folderId\"\
+    ;\n\x0bGetAllNotes\x12\x16\n\x06offset\x18\x01\x20\x01(\x05R\x06offset\
+    \x12\x14\n\x05limit\x18\x02\x20\x01(\x05R\x05limit\"\x20\n\x08SetToken\
+    \x12\x14\n\x05token\x18\x01\x20\x01(\tR\x05token\"\x8d\x01\n\rNoteShortI\
+    nfo\x12\x0e\n\x02id\x18\x01\x20\x01(\tR\x02id\x12\x1a\n\x08folderId\x18\
+    \x02\x20\x01(\tR\x08folderId\x12\x14\n\x05title\x18\x03\x20\x01(\tR\x05t\
+    itle\x12\x1c\n\tcreatedAt\x18\x04\x20\x01(\x03R\tcreatedAt\x12\x1c\n\tup\
+    datedAt\x18\x05\x20\x01(\x03R\tupdatedAt\"\x81\x01\n\x14GetNotesListResp\
+    onse\x12\x18\n\x07success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\ter\
+    rorCode\x18\x02\x20\x01(\x05R\terrorCode\x121\n\x05notes\x18\x03\x20\x03\
+    (\x0b2\x1b.gigamessages.NoteShortInfoR\x05notes\"\x9c\x01\n\x06Folder\
+    \x12\x0e\n\x02id\x18\x01\x20\x01(\tR\x02id\x12\x1a\n\x08parentId\x18\x02\
+    \x20\x01(\tR\x08parentId\x12\x14\n\x05title\x18\x03\x20\x01(\tR\x05title\
+    \x12\x14\n\x05level\x18\x04\x20\x01(\x05R\x05level\x12\x1c\n\tcreatedAt\
+    \x18\x05\x20\x01(\x03R\tcreatedAt\x12\x1c\n\tupdatedAt\x18\x06\x20\x01(\
+    \x03R\tupdatedAt\"\x80\x01\n\x16GetFoldersListResponse\x12\x18\n\x07succ\
+    ess\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\
+    \x01(\x05R\terrorCode\x12.\n\x07folders\x18\x03\x20\x03(\x0b2\x14.gigame\
+    ssages.FolderR\x07folders\"%\n\x0bGetNoteById\x12\x16\n\x06noteId\x18\
+    \x01\x20\x01(\tR\x06noteId\"\xa3\x01\n\x13GetNoteByIdResponse\x12\x18\n\
+    \x07success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\
+    \x02\x20\x01(\x05R\terrorCode\x12\x0e\n\x02id\x18\x03\x20\x01(\tR\x02id\
+    \x12\x1a\n\x08folderId\x18\x04\x20\x01(\tR\x08folderId\x12\x14\n\x05titl\
+    e\x18\x05\x20\x01(\tR\x05title\x12\x12\n\x04text\x18\x06\x20\x01(\tR\x04\
+    text\"+\n\rGetFolderById\x12\x1a\n\x08folderId\x18\x01\x20\x01(\tR\x08fo\
+    lderId\"\xe3\x01\n\x15GetFolderByIdResponse\x12\x18\n\x07success\x18\x01\
+    \x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\ter\
+    rorCode\x12\x0e\n\x02id\x18\x03\x20\x01(\tR\x02id\x12\x14\n\x05title\x18\
+    \x04\x20\x01(\tR\x05title\x12\x1a\n\x08parentId\x18\x05\x20\x01(\tR\x08p\
+    arentId\x12\x14\n\x05level\x18\x06\x20\x01(\x05R\x05level\x12\x1c\n\tcre\
+    atedAt\x18\x07\x20\x01(\x03R\tcreatedAt\x12\x1c\n\tupdatedAt\x18\x08\x20\
+    \x01(\x03R\tupdatedAt\"$\n\nRemoveNote\x12\x16\n\x06noteId\x18\x01\x20\
+    \x01(\tR\x06noteId\"*\n\x0cRemoveFolder\x12\x1a\n\x08folderId\x18\x01\
+    \x20\x01(\tR\x08folderId\"\x81\x01\n\x15GetRootFolderResponse\x12\x18\n\
+    \x07success\x18\x01\x20\x01(\x08R\x07success\x12\x1c\n\terrorCode\x18\
+    \x02\x20\x01(\x05R\terrorCode\x12\x1a\n\x08folderId\x18\x03\x20\x01(\tR\
+    \x08folderId\x12\x14\n\x05title\x18\x05\x20\x01(\tR\x05title\"M\n\x13Emp\
+    tyResultResponse\x12\x18\n\x07success\x18\x01\x20\x01(\x08R\x07success\
+    \x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorCode\"\xba\x01\n\x18Ge\
+    tLastLoginDataResponse\x12\x18\n\x07success\x18\x01\x20\x01(\x08R\x07suc\
+    cess\x12\x1c\n\terrorCode\x18\x02\x20\x01(\x05R\terrorCode\x12\x14\n\x05\
+    token\x18\x03\x20\x01(\tR\x05token\x12\x16\n\x06userId\x18\x04\x20\x01(\
+    \x05R\x06userId\x12\x14\n\x05email\x18\x05\x20\x01(\tR\x05email\x12\"\n\
+    \x0cisTokenValid\x18\x06\x20\x01(\x08R\x0cisTokenValid\"?\n\x0bSearchNot\
+    es\x12\x14\n\x05query\x18\x01\x20\x01(\tR\x05query\x12\x1a\n\x08folderId\
+    \x18\x02\x20\x01(\tR\x08folderId\"f\n\x0cUpdateFolder\x12\x0e\n\x02id\
+    \x18\x01\x20\x01(\tR\x02id\x12\x1a\n\x08parentId\x18\x02\x20\x01(\tR\x08\
+    parentId\x12\x14\n\x05title\x18\x03\x20\x01(\tR\x05title\x12\x14\n\x05le\
+    vel\x18\x04\x20\x01(\x05R\x05level\"b\n\nUpdateNote\x12\x0e\n\x02id\x18\
+    \x01\x20\x01(\tR\x02id\x12\x1a\n\x08folderId\x18\x02\x20\x01(\tR\x08fold\
+    erId\x12\x14\n\x05title\x18\x03\x20\x01(\tR\x05title\x12\x12\n\x04text\
+    \x18\x04\x20\x01(\tR\x04text\"(\n\x0eAddToFavorites\x12\x16\n\x06noteId\
+    \x18\x01\x20\x01(\tR\x06noteId\"-\n\x13RemoveFromFavorites\x12\x16\n\x06\
+    noteId\x18\x01\x20\x01(\tR\x06noteIdb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;
