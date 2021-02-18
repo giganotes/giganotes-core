@@ -897,7 +897,7 @@ impl Worker {
     fn handle_login_social(&self, command_data: &[u8]) -> Vec<u8> {
         let parsed = parse_from_bytes::<proto::messages::LoginSocial>(&command_data).unwrap();
 
-        info!("Social login for account {}", parsed.email);
+        info!("Social login for account {} for provider {}", parsed.email, parsed.provider);        
 
         let loginData = LoginSocialData {
             email: parsed.email.clone(),
@@ -1843,7 +1843,7 @@ impl Worker {
             21 => self.handle_remove_from_favorites(&data),
             22 => self.handle_get_favorites(),
             23 => self.handle_logout(),
-            24 => self.handle_login_social(&data);
+            24 => self.handle_login_social(&data),
             _ => self.handle_unrecognized(),
         }
     }
