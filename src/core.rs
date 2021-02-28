@@ -1,5 +1,5 @@
-extern crate crypto;
 extern crate protobuf;
+extern crate frank_jwt;
 
 use self::protobuf::rust::quote_escape_bytes;
 use crate::proto;
@@ -31,7 +31,7 @@ use tantivy::query::{BooleanQuery, Occur, Query, QueryParser, TermQuery};
 use tantivy::schema::*;
 use tantivy::ReloadPolicy;
 use uuid::Uuid;
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
+use frank_jwt::{Algorithm, ValidationOptions, decode};
 
 struct WorkerData {
     active: bool,
@@ -1460,8 +1460,9 @@ impl Worker {
         res.userId = data.userId as i32;
         res.success = true;
 
-        if res.token.len() > 0 {     
-            res.isTokenValid = match decode::<Claims>(&res.token, &DecodingKey::from_secret("secret".as_ref()), &Validation::default()) {
+        if res.token.len() > 0 {   
+            let secret = "secret".to_string();
+            res.isTokenValid = match decode(&res.token, &secret, Algorithm::HS256, &ValidationOptions::default()) {
                 Ok(c) => true,
                 Err(err) => false,
             };
