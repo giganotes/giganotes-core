@@ -1465,23 +1465,20 @@ impl Worker {
         if res.token.len() > 0 {   
             let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();                                                
             let cur_time =SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u64;
-
-            let claims: Claims = VerifyWithKey::<Claims>::verify_with_key(res.token.as_str(), &key).unwrap();
+            
             res.isTokenValid = match VerifyWithKey::<Claims>::verify_with_key(res.token.as_str(), &key) {
-                Ok(claims) if claims.exp < cur_time => true,                                   
+                Ok(claims) if claims.exp > cur_time => true,                                   
                 Ok(claims) => false,                
                 Err(err) => false,
-            };
+            };            
         } else {
             res.isTokenValid = false;
         }
-        
+
+        info!("Token valid: {} ", res.isTokenValid);        
         return res.write_to_bytes().unwrap();
     }
 
-    fn checkToken(token: &str) {
-        
-    }
     fn handle_get_root_folder(&self) -> Vec<u8> {
         info!("get_root_folder");
         let userId = self.data.lock().unwrap().userId;
