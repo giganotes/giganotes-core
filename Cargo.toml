@@ -20,7 +20,9 @@ chrono = {version = "0.4.19", features = ["serde"]}
 uuid = { version = "0.8", features = ["v4"] }
 html2text = "0.2.1"
 http = "0.2.1"
-frank_jwt = "3.1.2"
+jwt = "0.13.0"
+hmac = "0.10"
+sha2 = "0.9"
 
 [build-dependencies]
 protoc-rust = "2.17.0"
