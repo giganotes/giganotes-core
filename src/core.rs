@@ -1,5 +1,4 @@
 extern crate protobuf;
-extern crate frank_jwt;
 
 use self::protobuf::rust::quote_escape_bytes;
 use crate::proto;
@@ -31,7 +30,10 @@ use tantivy::query::{BooleanQuery, Occur, Query, QueryParser, TermQuery};
 use tantivy::schema::*;
 use tantivy::ReloadPolicy;
 use uuid::Uuid;
-use frank_jwt::{Algorithm, ValidationOptions, decode};
+use hmac::{Hmac, NewMac};
+use sha2::Sha256;
+use jwt::VerifyWithKey;
+use std::collections::BTreeMap;
 
 struct WorkerData {
     active: bool,
@@ -166,9 +168,9 @@ struct LoginResponse {
     rootFolder: SyncFolderInfo,
 }
     
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Claims {
-    exp: usize,
+    exp: u64,
 }
 
 pub trait DbMigration {
@@ -1461,9 +1463,13 @@ impl Worker {
         res.success = true;
 
         if res.token.len() > 0 {   
-            let secret = "secret".to_string();
-            res.isTokenValid = match decode(&res.token, &secret, Algorithm::HS256, &ValidationOptions::default()) {
-                Ok(c) => true,
+            let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();                                                
+            let cur_time =SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u64;
+
+            let claims: Claims = VerifyWithKey::<Claims>::verify_with_key(res.token.as_str(), &key).unwrap();
+            res.isTokenValid = match VerifyWithKey::<Claims>::verify_with_key(res.token.as_str(), &key) {
+                Ok(claims) if claims.exp < cur_time => true,                                   
+                Ok(claims) => false,                
                 Err(err) => false,
             };
         } else {
@@ -1473,6 +1479,9 @@ impl Worker {
         return res.write_to_bytes().unwrap();
     }
 
+    fn checkToken(token: &str) {
+        
+    }
     fn handle_get_root_folder(&self) -> Vec<u8> {
         info!("get_root_folder");
         let userId = self.data.lock().unwrap().userId;
