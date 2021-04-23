@@ -4,8 +4,10 @@ use self::protobuf::rust::quote_escape_bytes;
 use crate::proto;
 use chrono;
 use chrono::NaiveDateTime;
+use hmac::{Hmac, NewMac};
 use html2text::from_read;
 use http::StatusCode;
+use jwt::VerifyWithKey;
 use lazy_static::lazy_static; // 1.4.0
 use log::{info, trace, warn};
 use protobuf::*;
@@ -13,7 +15,9 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use rusqlite::{params, Connection, NO_PARAMS};
 use serde_derive::{Deserialize, Serialize};
 use serde_json;
+use sha2::Sha256;
 use std::borrow::Borrow;
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -30,10 +34,6 @@ use tantivy::query::{BooleanQuery, Occur, Query, QueryParser, TermQuery};
 use tantivy::schema::*;
 use tantivy::ReloadPolicy;
 use uuid::Uuid;
-use hmac::{Hmac, NewMac};
-use sha2::Sha256;
-use jwt::VerifyWithKey;
-use std::collections::BTreeMap;
 
 struct WorkerData {
     active: bool,
@@ -49,9 +49,9 @@ struct Worker {
     index: Mutex<Option<tantivy::Index>>,
     index_writer: Mutex<Option<tantivy::IndexWriter>>,
     index_reader: Mutex<Option<tantivy::IndexReader>>,
-    fields: RwLock<HashMap<String, tantivy::schema::Field>>,    
+    fields: RwLock<HashMap<String, tantivy::schema::Field>>,
     text_index_sender: Arc<Mutex<Sender<String>>>,
-    text_index_receiver: Arc<Mutex<Receiver<String>>>,    
+    text_index_receiver: Arc<Mutex<Receiver<String>>>,
 }
 
 pub struct AsyncWorker {
@@ -167,7 +167,7 @@ struct LoginResponse {
     userId: u32,
     rootFolder: SyncFolderInfo,
 }
-    
+
 #[derive(Debug, Deserialize)]
 struct Claims {
     exp: u64,
@@ -205,10 +205,35 @@ impl DbMigration for InitialMigration {
     fn down(&self, conn: &Connection) {}
 }
 
+struct AddHistoryTableMigration;
+
+impl DbMigration for AddHistoryTableMigration {
+    fn get_id(&self) -> i32 {
+        return 2;
+    }
+
+    fn up(&self, conn: &Connection) {
+        conn.execute_batch(
+            "
+            BEGIN;
+            CREATE TABLE IF NOT EXISTS 'note_revisions' ('id' INTEGER NOT NULL, 'createdAt' INTEGER, 'title' varchar NOT NULL, 'text' text NOT NULL, 'noteId' char(36), PRIMARY KEY('id'), FOREIGN KEY('noteId') REFERENCES 'note'('id'));
+
+            CREATE TRIGGER note_revision_insert AFTER INSERT ON note
+            BEGIN
+            INSERT INTO note_revisions(title, text, noteId, createdAt)
+                VALUES(NEW.title, NEW.text, NEW.id, NEW.createdAt);
+            END;
+            COMMIT;",
+        );
+    }
+
+    fn down(&self, conn: &Connection) {}
+}
+
 impl Worker {
     fn init(&self) {
         self.data.lock().unwrap().active = false;
-        info!("Creating worker");    
+        info!("Creating worker");
     }
 
     fn get_property(&self, key: &str) -> Option<String> {
@@ -295,7 +320,7 @@ impl Worker {
         self.retrieve_login_data_from_db(&mut data);
 
         self.initialize_fts(init_data.get_dataPath());
-        
+
         return res.write_to_bytes().unwrap();
     }
 
@@ -313,7 +338,8 @@ impl Worker {
             Err(_) => {}
         }
 
-        let migrations: Vec<&DbMigration> = vec![&InitialMigration {}];
+        let migrations: Vec<&DbMigration> =
+            vec![&InitialMigration {}, &AddHistoryTableMigration {}];
 
         for m in migrations {
             if m.get_id() <= last_applied_migration {
@@ -500,7 +526,7 @@ impl Worker {
         info!("Schedule index update for note {}", id);
         self.text_index_sender.lock().unwrap().send(id.to_string());
     }
-    
+
     fn add_note_to_search_index(&self, id: &str, title: &str, text: &str, folder_id: &str) {
         let mut index_writer = self.index_writer.lock().unwrap();
         let fields_map = self.fields.read().unwrap();
@@ -899,7 +925,10 @@ impl Worker {
     fn handle_login_social(&self, command_data: &[u8]) -> Vec<u8> {
         let parsed = parse_from_bytes::<proto::messages::LoginSocial>(&command_data).unwrap();
 
-        info!("Social login for account {} for provider {}", parsed.email, parsed.provider);        
+        info!(
+            "Social login for account {} for provider {}",
+            parsed.email, parsed.provider
+        );
 
         let loginData = LoginSocialData {
             email: parsed.email.clone(),
@@ -1358,9 +1387,7 @@ impl Worker {
                             params![&note.title, &note.folderId, &note.text, note.updatedAt.timestamp_millis(), &note.id]
                         ).unwrap();
 
-                        self.schedule_update_in_search_index(
-                            &note.id
-                        );
+                        self.schedule_update_in_search_index(&note.id);
                     // Update local info
                     } else if remote_note_timestamp < local_note.updatedAt {
                         // Update remote info
@@ -1462,20 +1489,24 @@ impl Worker {
         res.userId = data.userId as i32;
         res.success = true;
 
-        if res.token.len() > 0 {   
-            let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();                                                
-            let cur_time =SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u64;
-            
-            res.isTokenValid = match VerifyWithKey::<Claims>::verify_with_key(res.token.as_str(), &key) {
-                Ok(claims) if claims.exp > cur_time => true,                                   
-                Ok(claims) => false,                
-                Err(err) => false,
-            };            
+        if res.token.len() > 0 {
+            let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+            let cur_time = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as u64;
+
+            res.isTokenValid =
+                match VerifyWithKey::<Claims>::verify_with_key(res.token.as_str(), &key) {
+                    Ok(claims) if claims.exp > cur_time => true,
+                    Ok(claims) => false,
+                    Err(err) => false,
+                };
         } else {
             res.isTokenValid = false;
         }
 
-        info!("Token valid: {} ", res.isTokenValid);        
+        info!("Token valid: {} ", res.isTokenValid);
         return res.write_to_bytes().unwrap();
     }
 
@@ -1814,7 +1845,7 @@ impl Worker {
 
     fn handle_logout(&self) -> Vec<u8> {
         info!("Logging out");
-        
+
         self.insert_or_update_props_record("token", &"".to_string());
         self.insert_or_update_props_record("userId", &"".to_string());
         self.insert_or_update_props_record("email", &"".to_string());
@@ -1823,7 +1854,7 @@ impl Worker {
         res.success = true;
 
         return res.write_to_bytes().unwrap();
-    }    
+    }
 
     fn handle(&self, command: i8, data: &[u8], size: usize) -> Vec<u8> {
         match command {
@@ -1866,20 +1897,23 @@ impl AsyncWorker {
         self.start_text_indexing_thread();
     }
 
-    fn start_text_indexing_thread(&self) {        
-        let text_indexer_receiver_local = self.inner.text_index_receiver.clone();         
+    fn start_text_indexing_thread(&self) {
+        let text_indexer_receiver_local = self.inner.text_index_receiver.clone();
         let mut local_self = self.inner.clone();
 
-        thread::spawn(move|| {            
-            loop {
-                let note_id = text_indexer_receiver_local.lock().unwrap().recv().unwrap();
-                println!("Indexing thread received note id {} to index", note_id);
+        thread::spawn(move || loop {
+            let note_id = text_indexer_receiver_local.lock().unwrap().recv().unwrap();
+            println!("Indexing thread received note id {} to index", note_id);
 
-                let note_full_info = local_self.get_local_note_by_id(&note_id).unwrap();
-                local_self.update_note_in_search_index(&note_id, &note_full_info.title, &note_full_info.text, &note_full_info.folderId);
+            let note_full_info = local_self.get_local_note_by_id(&note_id).unwrap();
+            local_self.update_note_in_search_index(
+                &note_id,
+                &note_full_info.title,
+                &note_full_info.text,
+                &note_full_info.folderId,
+            );
 
-                println!("Indexing thread finished processing note {}", note_id);
-            }     
+            println!("Indexing thread finished processing note {}", note_id);
         });
     }
 
@@ -1922,7 +1956,7 @@ lazy_static! {
                 index_writer: Mutex::new(None),
                 fields: RwLock::new(HashMap::<String, tantivy::schema::Field>::new()),
                 text_index_sender: Arc::new(Mutex::new(text_index_sender)),
-                text_index_receiver: Arc::new(Mutex::new(text_index_receiver)),                
+                text_index_receiver: Arc::new(Mutex::new(text_index_receiver)),
             }),
             sender: Arc::new(Mutex::new(tx)),
             receiver: Arc::new(Mutex::new(rx)),
