@@ -223,6 +223,13 @@ impl DbMigration for AddHistoryTableMigration {
             INSERT INTO note_revisions(title, text, noteId, createdAt)
                 VALUES(NEW.title, NEW.text, NEW.id, NEW.createdAt);
             END;
+
+            CREATE TRIGGER note_revision_update AFTER UPDATE ON note
+            BEGIN
+            INSERT INTO note_revisions(title, text, noteId, createdAt)
+                VALUES(NEW.title, NEW.text, NEW.id, NEW.createdAt);
+            END;
+
             COMMIT;",
         );
     }
