@@ -1,6 +1,5 @@
 extern crate protobuf;
 
-use self::protobuf::rust::quote_escape_bytes;
 use crate::proto;
 use chrono;
 use chrono::NaiveDateTime;
@@ -14,10 +13,13 @@ use protobuf::*;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use rusqlite::{params, Connection, NO_PARAMS};
 use serde_derive::{Deserialize, Serialize};
-use serde_json;
+//use serde_json;
+use crate::proto::messages::{
+    AddToFavorites, CreateFolder, CreateNote, GetAllNotes, GetFolderById, GetNoteById,
+    GetNotesList, InitData, Login, LoginSocial, RemoveFolder, RemoveFromFavorites, RemoveNote,
+    SearchNotes, SetToken, UpdateFolder, UpdateNote,
+};
 use sha2::Sha256;
-use std::borrow::Borrow;
-use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -303,12 +305,12 @@ impl Worker {
             return res.write_to_bytes().unwrap();
         }
 
-        let init_data = parse_from_bytes::<proto::messages::InitData>(&command_data).unwrap();
-        data.apiPath = init_data.get_apiPath().to_string();
+        let init_data = InitData::parse_from_bytes(&command_data).unwrap();
+        data.apiPath = init_data.apiPath.to_string();
         info!("Backend API {}", data.apiPath);
-        info!("Data directory{}", init_data.get_dataPath());
+        info!("Data directory{}", init_data.dataPath);
 
-        let dbPath = Path::new(&init_data.get_dataPath()).join("local.db");
+        let dbPath = Path::new(&init_data.dataPath).join("local.db");
         info!(
             "Opening SQlite database with path {}",
             &dbPath.to_str().unwrap()
@@ -326,7 +328,7 @@ impl Worker {
 
         self.retrieve_login_data_from_db(&mut data);
 
-        self.initialize_fts(init_data.get_dataPath());
+        self.initialize_fts(init_data.dataPath.as_str());
 
         return res.write_to_bytes().unwrap();
     }
@@ -345,7 +347,7 @@ impl Worker {
             Err(_) => {}
         }
 
-        let migrations: Vec<&DbMigration> =
+        let migrations: Vec<&dyn DbMigration> =
             vec![&InitialMigration {}, &AddHistoryTableMigration {}];
 
         for m in migrations {
@@ -413,8 +415,8 @@ impl Worker {
 
     fn handle_set_token(&self, command_data: &[u8]) -> Vec<u8> {
         info!("Set token");
-        let parsed = parse_from_bytes::<proto::messages::SetToken>(&command_data).unwrap();
-        self.data.lock().unwrap().token = parsed.get_token().to_string();
+        let parsed = SetToken::parse_from_bytes(&command_data).unwrap();
+        self.data.lock().unwrap().token = parsed.token.to_string();
 
         let mut res = proto::messages::EmptyResultResponse::new();
         res.success = true;
@@ -437,7 +439,7 @@ impl Worker {
     }
 
     fn handle_remove_note(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::RemoveNote>(&command_data).unwrap();
+        let parsed = RemoveNote::parse_from_bytes(&command_data).unwrap();
         info!("Remove note with id {}", parsed.noteId);
 
         self.mark_note_as_deleted(&parsed.noteId);
@@ -449,7 +451,7 @@ impl Worker {
     }
 
     fn handle_remove_folder(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::RemoveFolder>(&command_data).unwrap();
+        let parsed = RemoveFolder::parse_from_bytes(&command_data).unwrap();
         info!("Remove folder with id {}", parsed.folderId);
 
         let allChildFoldersQuery = "WITH RECURSIVE children(id) AS ( \
@@ -505,7 +507,7 @@ impl Worker {
     }
 
     fn handle_create_note(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::CreateNote>(&command_data).unwrap();
+        let parsed = CreateNote::parse_from_bytes(&command_data).unwrap();
         info!("Create note with name {}", parsed.title);
 
         let new_note_uuid = Uuid::new_v4().to_hyphenated().to_string();
@@ -661,7 +663,7 @@ impl Worker {
     }
 
     fn handle_create_folder(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::CreateFolder>(&command_data).unwrap();
+        let parsed = CreateFolder::parse_from_bytes(&command_data).unwrap();
         info!("Create folder with name {}", parsed.title);
 
         let mut new_folder_level = 0;
@@ -704,7 +706,7 @@ impl Worker {
     }
 
     fn handle_get_notes_by_folder(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::GetNotesList>(&command_data).unwrap();
+        let parsed = GetNotesList::parse_from_bytes(&command_data).unwrap();
         info!("Get notes by folder name {}", parsed.folderId);
 
         let userId = self.data.lock().unwrap().userId;
@@ -730,7 +732,7 @@ impl Worker {
         let mut res = proto::messages::GetNotesListResponse::new();
         res.success = true;
 
-        let mut notes_list_proto = protobuf::RepeatedField::<proto::messages::NoteShortInfo>::new();
+        let mut notes_list_proto = Vec::<proto::messages::NoteShortInfo>::new();
 
         for n in notes_iter {
             let note = n.unwrap();
@@ -743,13 +745,13 @@ impl Worker {
             notes_list_proto.push(nsi);
         }
 
-        res.set_notes(notes_list_proto);
+        res.notes = notes_list_proto;
 
         return res.write_to_bytes().unwrap();
     }
 
     fn handle_get_all_notes(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::GetAllNotes>(&command_data).unwrap();
+        let parsed = GetAllNotes::parse_from_bytes(&command_data).unwrap();
         let guard = self.connection.lock().unwrap();
         let conn = guard.as_ref().unwrap();
         let userId = self.data.lock().unwrap().userId;
@@ -773,7 +775,7 @@ impl Worker {
         let mut res = proto::messages::GetNotesListResponse::new();
         res.success = true;
 
-        let mut notes_list_proto = protobuf::RepeatedField::<proto::messages::NoteShortInfo>::new();
+        let mut notes_list_proto = Vec::<proto::messages::NoteShortInfo>::new();
 
         for n in notes_iter {
             let note = n.unwrap();
@@ -786,7 +788,7 @@ impl Worker {
             notes_list_proto.push(nsi);
         }
 
-        res.set_notes(notes_list_proto);
+        res.notes = notes_list_proto;
 
         return res.write_to_bytes().unwrap();
     }
@@ -813,7 +815,7 @@ impl Worker {
     }
 
     fn handle_get_note_by_id(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::GetNoteById>(&command_data).unwrap();
+        let parsed = GetNoteById::parse_from_bytes(&command_data).unwrap();
         info!("Get note by id {}", parsed.noteId);
 
         let note = self.get_local_note_by_id(&parsed.noteId).unwrap();
@@ -849,7 +851,7 @@ impl Worker {
     }
 
     fn handle_get_folder_by_id(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::GetFolderById>(&command_data).unwrap();
+        let parsed = GetFolderById::parse_from_bytes(&command_data).unwrap();
         info!("Get folder by id {}", parsed.folderId);
 
         let folder = self.get_local_folder_by_id(&parsed.folderId).unwrap();
@@ -870,7 +872,7 @@ impl Worker {
     }
 
     fn handle_login(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::Login>(&command_data).unwrap();
+        let parsed = Login::parse_from_bytes(&command_data).unwrap();
 
         info!("Login for account {}", parsed.email);
 
@@ -930,7 +932,7 @@ impl Worker {
     }
 
     fn handle_login_social(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::LoginSocial>(&command_data).unwrap();
+        let parsed = LoginSocial::parse_from_bytes(&command_data).unwrap();
 
         info!(
             "Social login for account {} for provider {}",
@@ -994,7 +996,7 @@ impl Worker {
     }
 
     fn handle_register(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::Login>(&command_data).unwrap();
+        let parsed = Login::parse_from_bytes(&command_data).unwrap();
 
         info!("Register account for {}", parsed.email);
 
@@ -1575,7 +1577,7 @@ impl Worker {
         let mut res = proto::messages::GetFoldersListResponse::new();
         res.success = true;
 
-        let mut folders_list_proto = protobuf::RepeatedField::<proto::messages::Folder>::new();
+        let mut folders_list_proto = Vec::<proto::messages::Folder>::new();
 
         for n in folders_iter {
             let folder = n.unwrap();
@@ -1592,13 +1594,13 @@ impl Worker {
             folders_list_proto.push(nsi);
         }
 
-        res.set_folders(folders_list_proto);
+        res.folders = folders_list_proto;
 
         return res.write_to_bytes().unwrap();
     }
 
     fn handle_update_folder(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::UpdateFolder>(&command_data).unwrap();
+        let parsed = UpdateFolder::parse_from_bytes(&command_data).unwrap();
         info!("Update folder with name {}", parsed.title);
 
         let time_millis = self.get_time_in_millis();
@@ -1627,7 +1629,7 @@ impl Worker {
     }
 
     fn handle_update_note(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::UpdateNote>(&command_data).unwrap();
+        let parsed = UpdateNote::parse_from_bytes(&command_data).unwrap();
         info!("Update note with id {}", parsed.id);
 
         let time_millis = self.get_time_in_millis();
@@ -1657,7 +1659,7 @@ impl Worker {
     }
 
     fn handle_get_notes_by_search(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::SearchNotes>(&command_data).unwrap();
+        let parsed = SearchNotes::parse_from_bytes(&command_data).unwrap();
         info!("Search by phrase {}", parsed.query);
 
         let ir_guard = self.index_reader.lock().unwrap();
@@ -1722,7 +1724,7 @@ impl Worker {
         let mut res = proto::messages::GetNotesListResponse::new();
         res.success = true;
 
-        let mut notes_list_proto = protobuf::RepeatedField::<proto::messages::NoteShortInfo>::new();
+        let mut notes_list_proto = Vec::<proto::messages::NoteShortInfo>::new();
 
         for (_score, doc_address) in top_docs {
             let retrieved_doc = searcher.doc(doc_address).unwrap();
@@ -1732,7 +1734,7 @@ impl Worker {
                 .find(|x| x.field() == *id_field)
                 .unwrap()
                 .value()
-                .text()
+                .as_text()
                 .unwrap();
 
             let note_result = self.get_local_note_by_id(note_id);
@@ -1752,7 +1754,7 @@ impl Worker {
             notes_list_proto.push(nsi);
         }
 
-        res.set_notes(notes_list_proto);
+        res.notes = notes_list_proto;
 
         return res.write_to_bytes().unwrap();
     }
@@ -1763,7 +1765,7 @@ impl Worker {
     }
 
     fn handle_add_to_favorites(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::AddToFavorites>(&command_data).unwrap();
+        let parsed = AddToFavorites::parse_from_bytes(&command_data).unwrap();
         info!("Add to favorites {}", parsed.noteId);
 
         let user_id = self.data.lock().unwrap().userId;
@@ -1786,7 +1788,7 @@ impl Worker {
     }
 
     fn handle_remove_from_favorites(&self, command_data: &[u8]) -> Vec<u8> {
-        let parsed = parse_from_bytes::<proto::messages::AddToFavorites>(&command_data).unwrap();
+        let parsed = RemoveFromFavorites::parse_from_bytes(&command_data).unwrap();
         info!("Remove from favorites {}", parsed.noteId);
 
         let user_id = self.data.lock().unwrap().userId;
@@ -1832,7 +1834,7 @@ impl Worker {
         let mut res = proto::messages::GetNotesListResponse::new();
         res.success = true;
 
-        let mut notes_list_proto = protobuf::RepeatedField::<proto::messages::NoteShortInfo>::new();
+        let mut notes_list_proto = Vec::<proto::messages::NoteShortInfo>::new();
 
         for n in notes_iter {
             let note = n.unwrap();
@@ -1845,7 +1847,7 @@ impl Worker {
             notes_list_proto.push(nsi);
         }
 
-        res.set_notes(notes_list_proto);
+        res.notes = notes_list_proto;
 
         return res.write_to_bytes().unwrap();
     }
@@ -1864,6 +1866,9 @@ impl Worker {
     }
 
     fn handle(&self, command: i8, data: &[u8], size: usize) -> Vec<u8> {
+        info!("Handling command {}", command);
+        info!("dat {:?}", data);
+
         match command {
             1 => self.handle_init(&data),
             2 => self.handle_create_note(&data),
